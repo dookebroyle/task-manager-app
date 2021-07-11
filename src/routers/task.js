@@ -3,7 +3,7 @@ const Task = require('../models/task')
 const router = new express.Router()
 const auth = require('../middleware/auth')
 
-//create new task
+//create new task with logged in user as owner
 router.post('/tasks', auth, async (req, res) =>{
     const task = new Task({
         ...req.body,
@@ -18,18 +18,26 @@ router.post('/tasks', auth, async (req, res) =>{
 
 })
 
-//read all tasks
+//read all tasks for logged in user
 router.get('/tasks',  auth, async (req, res) => {
-    
+    const match = {}
+    if(req.query.completed){
+        match.completed = req.query.completed === 'true'
+    }
     try{
-        const tasks = await Task.find({ owner: req.user._id})
-        res.send(tasks)
+        await req.user.populate({
+            path: 'tasks',
+            match
+        }).execPopulate()
+
+        // const tasks = await Task.find({ owner: req.user._id})
+        res.send(req.user.tasks)
     } catch (e) {
         res.status(500).send()
     }
 })
 
-//read one task
+//read one task by id
 router.get('/tasks/:id', auth, async (req, res) => {
     const _id = req.params.id
     try{
@@ -43,7 +51,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-//update existing task
+//update existing task by id
 router.patch('/tasks/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = [ 'description','completed']
