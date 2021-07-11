@@ -18,6 +18,11 @@ router.post('/users', async (req, res) => {
     }
 })
 
+//view profile
+router.get('/users/me', auth,  async (req, res) => {
+    res.send(req.user)
+})
+
 //user login
 router.post ('/users/login', async (req, res) =>{
     try{
@@ -56,30 +61,22 @@ router.post('/users/logoutAll', auth, async (req, res) => {
 
 
 //update existing user
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/me', auth, async (req, res) => {
     const allowedUpdates = [ 'name', 'email', 'password', 'age']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every( update => allowedUpdates.includes(update))
-    
     if (!isValidOperation){
         return res.status(400).send({error: 'Invalid updates'})
     }
-    
     try{
-        const user = await User.findById(req.params.id)
-
-        updates.forEach( update => user[update] = req.body[update])
-        await user.save()
-
-        if (!user){
-            res.status(404).send()
-        }
-        res.send(user)
+        updates.forEach( update => req.user[update] = req.body[update] )
+        await req.user.save()
+        res.send(req.user)
     }catch (e) {
-       if(e.errors.password.properties.message){
-        return res.status(400).send(e.errors.password.properties.message)
-       }
-        res.status(500).send()
+    //    if(e.errors.password.properties.message){
+    //     return res.status(400).send(e.errors.password.properties.message)
+    //    }
+        res.status(500).send(e)
     }
 })
 
