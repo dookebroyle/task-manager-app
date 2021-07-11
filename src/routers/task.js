@@ -18,7 +18,7 @@ router.post('/tasks', auth, async (req, res) =>{
 
 })
 
-//read all tasks for logged in user
+//read all tasks for logged in user using optional query string
 router.get('/tasks',  auth, async (req, res) => {
     const match = {}
     if(req.query.completed){
@@ -27,7 +27,11 @@ router.get('/tasks',  auth, async (req, res) => {
     try{
         await req.user.populate({
             path: 'tasks',
-            match
+            match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt(req.query.skip)
+            }
         }).execPopulate()
 
         // const tasks = await Task.find({ owner: req.user._id})
