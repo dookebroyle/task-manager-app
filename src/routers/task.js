@@ -26,9 +26,8 @@ router.get('/tasks', async (req, res) => {
 
 //read one task
 router.get('/tasks/:id', async (req, res) => {
-    const id = req.params.id
     try{
-        const task = await Task.findById(id)
+        const task = await Task.findById(req.params.id)
         if(!task){
             res.status(404).send()
         }
@@ -40,7 +39,6 @@ router.get('/tasks/:id', async (req, res) => {
 
 //update existing task
 router.patch('/tasks/:id', async (req, res) => {
-    const id = req.params.id
     const allowedUpdates = [ 'description','completed']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every( update => allowedUpdates.includes(update))
@@ -51,22 +49,25 @@ router.patch('/tasks/:id', async (req, res) => {
 
 
     try{
-        const task = await Task.findByIdAndUpdate(id, req.body, {new: true, runValidators: true})
+        
+        const task = await Task.findById(req.params.id)
+
+        updates.forEach( update => task[update] = req.body[update])
+        await task.save()
+
         if(!task) {
             res.status(404).send()
         }
         res.send(task)
     } catch (e) {
-        res.status(500).send()
+        res.send(e)
     }
 })
 
 //delete a task
 router.delete('/tasks/:id', async (req, res) => {
-    const id = req.params.id
-
     try{
-        const task = await Task.findByIdAndDelete(id)
+        const task = await Task.findByIdAndDelete(req.params.id)
         if (!task) {
             res.status(404).send()
         }
@@ -75,7 +76,5 @@ router.delete('/tasks/:id', async (req, res) => {
         res.status(500).send()
     }
 })
-
-
 
 module.exports = router
