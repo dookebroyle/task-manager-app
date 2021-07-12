@@ -2,3 +2,4 @@ node_modules
 playground
 playground/promise-chaining.js
 playground/promise-chaining-2.js
+config
