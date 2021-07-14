@@ -13,16 +13,12 @@ const sendWelcomeEmail = (email, name) => {
 }
 
 const sendCancelEmail = (email, name) => {
-    try{
         sgMail.send({
         to: email,
         from: 'doyle_brooke@hotmail.com',
         subject: `Goodbye!`,
         text: `We're sorry to see you go. Please let us know if there's anything we could have done better. Your feedback is very important to us!`
-    })}
-    catch (e) {
-        throw new Error(`Unable to send email to ${email}`)
-    }
+    })
 }
 
 
